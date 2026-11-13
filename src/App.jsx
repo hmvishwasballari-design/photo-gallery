@@ -2,7 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faThumbsUp } from '@fortawesome/free-solid-svg-icons';
 import {
-  Camera, Moon, Sun, Search, ArrowUpRight, MapPin
+  Camera, Search, ArrowUpRight, MapPin,
+  X, ChevronLeft, ChevronRight
 } from 'lucide-react';
 
 const PHOTOS = [
@@ -116,20 +117,28 @@ const PHOTOS = [
   }
 ];
 
-function PhotoCard({ photo, index, count, onLike }) {
+function PhotoCard({ photo, index, count, onLike, onOpen }) {
   return (
     <article className="photo-row reveal">
-      <div className="photo-image">
+      <button
+        className="photo-image photo-open-button"
+        type="button"
+        onClick={() => onOpen(photo)}
+        aria-label={`Open photograph: ${photo.title} by ${photo.author}`}
+      >
         <img
           src={`/photos/${photo.file}`}
           alt={`${photo.title} photographed by ${photo.author}`}
-          loading="eager"
+          loading="lazy"
           decoding="async"
         />
         <span className="photo-number">
           {String(index + 1).padStart(2, '0')}
         </span>
-      </div>
+        <span className="photo-open-label">
+          EXPLORE FRAME <ArrowUpRight size={15} />
+        </span>
+      </button>
 
       <div className="photo-information">
         <div className="photo-author-label">PHOTOGRAPHER</div>
@@ -170,22 +179,7 @@ function PhotoCard({ photo, index, count, onLike }) {
 export default function App() {
   const [likes, setLikes] = useState({});
   const [search, setSearch] = useState('');
-
-  const [theme, setTheme] = useState(() => {
-    try {
-      return localStorage.getItem('stillframe-theme') || 'dark';
-    } catch {
-      return 'dark';
-    }
-  });
-
-  useEffect(() => {
-    try {
-      localStorage.setItem('stillframe-theme', theme);
-    } catch {
-      // Theme remains active for this session.
-    }
-  }, [theme]);
+  const [selectedPhoto, setSelectedPhoto] = useState(null);
 
   const handleLike = id => {
     setLikes(previous => ({
@@ -242,12 +236,44 @@ export default function App() {
     };
   }, []);
 
+  useEffect(() => {
+    if (!selectedPhoto) return;
+
+    const handleKeyDown = event => {
+      if (event.key === 'Escape') {
+        setSelectedPhoto(null);
+      }
+
+      if (event.key === 'ArrowRight') {
+        setSelectedPhoto(current => {
+          const index = PHOTOS.findIndex(photo => photo.id === current.id);
+          return PHOTOS[(index + 1) % PHOTOS.length];
+        });
+      }
+
+      if (event.key === 'ArrowLeft') {
+        setSelectedPhoto(current => {
+          const index = PHOTOS.findIndex(photo => photo.id === current.id);
+          return PHOTOS[(index - 1 + PHOTOS.length) % PHOTOS.length];
+        });
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    document.body.style.overflow = 'hidden';
+
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown);
+      document.body.style.overflow = '';
+    };
+  }, [selectedPhoto]);
+
   const totalLikes = Object.values(likes).reduce(
     (sum, value) => sum + value, 0
   );
 
   return (
-    <div className="gallery-app" data-theme={theme}>
+    <div className="gallery-app" data-theme="dark">
       <div className="ambient-background" aria-hidden="true">
         <span className="ambient-orb orb-one" />
         <span className="ambient-orb orb-two" />
@@ -263,16 +289,6 @@ export default function App() {
 
         <div className="topbar-right">
           <span className="collection-status"><i /> PHOTO COLLECTION</span>
-          <span className="topbar-divider" />
-          <button
-            className="theme-toggle"
-            onClick={() => setTheme(current =>
-              current === 'dark' ? 'light' : 'dark'
-            )}
-          >
-            {theme === 'dark' ? <Sun size={16} /> : <Moon size={16} />}
-            <span>{theme === 'dark' ? 'LIGHT MODE' : 'DARK MODE'}</span>
-          </button>
         </div>
       </header>
 
@@ -335,6 +351,7 @@ export default function App() {
                 index={PHOTOS.indexOf(photo)}
                 count={likes[photo.id] || 0}
                 onLike={handleLike}
+                onOpen={setSelectedPhoto}
               />
             ))}
 
@@ -350,6 +367,97 @@ export default function App() {
             )}
           </div>
         </section>
+
+        {selectedPhoto && (
+          <div
+            className="viewer-overlay"
+            role="dialog"
+            aria-modal="true"
+            aria-label="Photograph viewer"
+            onClick={() => setSelectedPhoto(null)}
+          >
+            <button
+              className="viewer-close"
+              onClick={() => setSelectedPhoto(null)}
+              aria-label="Close photograph viewer"
+            >
+              <X size={22} />
+            </button>
+
+            <button
+              className="viewer-nav viewer-previous"
+              onClick={event => {
+                event.stopPropagation();
+                const index = PHOTOS.findIndex(photo => photo.id === selectedPhoto.id);
+                setSelectedPhoto(PHOTOS[(index - 1 + PHOTOS.length) % PHOTOS.length]);
+              }}
+              aria-label="Previous photograph"
+            >
+              <ChevronLeft size={27} />
+            </button>
+
+            <div className="viewer-content" onClick={event => event.stopPropagation()}>
+              <div className="viewer-image-wrap">
+                <img
+                  src={`/photos/${selectedPhoto.file}`}
+                  alt={selectedPhoto.title}
+                />
+              </div>
+
+              <aside className="viewer-details">
+                <span className="viewer-kicker">STILLFRAME / THE COLLECTION</span>
+                <span className="viewer-index">
+                  FRAME {String(PHOTOS.indexOf(selectedPhoto) + 1).padStart(2, '0')}
+                  <span> / {String(PHOTOS.length).padStart(2, '0')}</span>
+                </span>
+
+                <h2>{selectedPhoto.title}</h2>
+                <div className="viewer-rule" />
+
+                <div className="viewer-detail-item">
+                  <span>PHOTOGRAPHER</span>
+                  <strong>{selectedPhoto.author}</strong>
+                </div>
+
+                <div className="viewer-detail-item">
+                  <span>LOCATION</span>
+                  <strong>{selectedPhoto.location}</strong>
+                </div>
+
+                <div className="viewer-detail-item">
+                  <span>IMAGE LICENCE</span>
+                  <strong>{selectedPhoto.license}</strong>
+                </div>
+
+                <a
+                  className="viewer-credit-link"
+                  href={selectedPhoto.source}
+                  target="_blank"
+                  rel="noreferrer"
+                >
+                  VIEW ORIGINAL SOURCE <ArrowUpRight size={15} />
+                </a>
+
+                <div className="viewer-bottom">
+                  <span>USE ← → TO EXPLORE</span>
+                  <span>ESC TO CLOSE</span>
+                </div>
+              </aside>
+            </div>
+
+            <button
+              className="viewer-nav viewer-next"
+              onClick={event => {
+                event.stopPropagation();
+                const index = PHOTOS.findIndex(photo => photo.id === selectedPhoto.id);
+                setSelectedPhoto(PHOTOS[(index + 1) % PHOTOS.length]);
+              }}
+              aria-label="Next photograph"
+            >
+              <ChevronRight size={27} />
+            </button>
+          </div>
+        )}
 
         <footer className="footer">
           <a className="brand" href="#top">
