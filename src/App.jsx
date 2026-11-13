@@ -1,47 +1,158 @@
-import React, { useCallback, useEffect, useRef, useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faThumbsUp } from '@fortawesome/free-solid-svg-icons';
 import {
-  Camera, Moon, Sun, Search, LoaderCircle,
-  RefreshCw, ArrowUpRight, Image as ImageIcon
+  Camera, Moon, Sun, Search, ArrowUpRight, MapPin
 } from 'lucide-react';
 
-const API = 'https://picsum.photos/v2/list';
+const PHOTOS = [
+  {
+    id: 'local-1',
+    author: 'Premnath T. Murkoth',
+    location: 'Palakkad Gap, Western Ghats, India',
+    title: 'Western Ghats',
+    file: 'photo-1.jpg',
+    source: 'https://commons.wikimedia.org/wiki/File:Western_Ghats..jpg',
+    license: 'CC BY-SA 3.0'
+  },
+  {
+    id: 'local-2',
+    author: 'Arivumathi',
+    location: 'Gomukhi Dam, Kachirayapalayam, Tamil Nadu',
+    title: 'Western Ghats',
+    file: 'photo-2.jpg',
+    source: 'https://commons.wikimedia.org/wiki/File:%22Western_ghats%22.JPG',
+    license: 'CC BY-SA 3.0'
+  },
+  {
+    id: 'local-3',
+    author: 'Pranav Kumar',
+    location: 'Uttarakhand, India',
+    title: 'Mountain Forest',
+    file: 'photo-3.jpg',
+    source: 'https://commons.wikimedia.org/wiki/File:Mountain_forest_in_India_-_Far_from_home.jpg',
+    license: 'CC BY-SA 4.0'
+  },
+  {
+    id: 'local-4',
+    author: 'Man On Mission',
+    location: 'Western Ghats, Karnataka, India',
+    title: 'Western Ghats Scenery',
+    file: 'photo-4.jpg',
+    source: 'https://commons.wikimedia.org/wiki/File:Scenery_western_ghats.JPG',
+    license: 'GFDL / CC BY-SA'
+  },
+  {
+    id: 'local-5',
+    author: 'Shravan Kamath94',
+    location: 'Charmadi Ghats, Karnataka, India',
+    title: 'Western Ghats Landscape',
+    file: 'photo-5.jpg',
+    source: 'https://commons.wikimedia.org/wiki/File:Western_Ghats,_India.jpg',
+    license: 'CC BY-SA 4.0'
+  },
+  {
+    id: 'local-6',
+    author: 'Samson Joseph',
+    location: 'Western Ghats region, Karnataka, India',
+    title: 'Western Ghats in Karnataka',
+    file: 'photo-6.jpg',
+    source: 'https://commons.wikimedia.org/wiki/File:Western_Ghats_in_Karnataka.jpg',
+    license: 'CC BY-SA 4.0'
+  },
+  {
+    id: 'local-7',
+    author: 'Navya1329',
+    location: 'India',
+    title: 'Forest and Mountain River',
+    file: 'photo-7.jpg',
+    source: 'https://commons.wikimedia.org/wiki/File:A_forest_alongside_mountain_and_river_(India,_2016).jpg',
+    license: 'CC BY-SA 4.0'
+  },
+  {
+    id: 'local-8',
+    author: 'TulikaPriyadarshini',
+    location: 'Manali, Himachal Pradesh, India',
+    title: 'Mountain Forest',
+    file: 'photo-8.jpg',
+    source: 'https://commons.wikimedia.org/wiki/File:Mountain_Forest.jpg',
+    license: 'CC BY-SA 4.0'
+  },
+  {
+    id: 'local-9',
+    author: 'Snehashish Chatterjee',
+    location: 'Mountains of India',
+    title: 'Forest Mountain',
+    file: 'photo-9.jpg',
+    source: 'https://commons.wikimedia.org/wiki/File:Forest_Mountain.jpg',
+    license: 'CC BY-SA 4.0'
+  },
+  {
+    id: 'local-10',
+    author: 'Giri.kalpesh20',
+    location: 'Sonprayag, Uttarakhand, India',
+    title: 'Green Forest Mountain',
+    file: 'photo-10.jpg',
+    source: 'https://commons.wikimedia.org/wiki/File:Green_forest_mountain.jpg',
+    license: 'CC BY-SA 4.0'
+  },
+  {
+    id: 'local-11',
+    author: 'Abhiraj1720',
+    location: 'Mountains of India',
+    title: 'Forest Covered Mountain',
+    file: 'photo-11.jpg',
+    source: 'https://commons.wikimedia.org/wiki/File:Forest_covered_mountain.jpg',
+    license: 'CC BY-SA 4.0'
+  },
+  {
+    id: 'local-12',
+    author: 'Shahid Nawaz Landge',
+    location: 'Kudremukh National Park, Karnataka, India',
+    title: 'Cloud Forest',
+    file: 'photo-12.jpg',
+    source: 'https://commons.wikimedia.org/wiki/File:Kudremukha_National_Park.jpg',
+    license: 'CC BY-SA 4.0'
+  }
+];
 
-function PhotoCard({ photo, count, onLike, index }) {
-  const [imageLoaded, setImageLoaded] = useState(false);
-  const [imageFailed, setImageFailed] = useState(false);
-
+function PhotoCard({ photo, index, count, onLike }) {
   return (
     <article className="photo-row">
       <div className="photo-image">
-        {!imageLoaded && !imageFailed && <div className="image-skeleton" />}
-
-        {imageFailed ? (
-          <div className="image-fallback">
-            <ImageIcon size={25} />
-            <span>Image unavailable</span>
-          </div>
-        ) : (
-          <img
-            src={photo.download_url}
-            alt={`Photograph by ${photo.author}`}
-            loading="lazy"
-            onLoad={() => setImageLoaded(true)}
-            onError={() => setImageFailed(true)}
-            style={{ opacity: imageLoaded ? 1 : 0 }}
-          />
-        )}
-
+        <img
+          src={`/photos/${photo.file}`}
+          alt={`${photo.title} photographed by ${photo.author}`}
+          loading="eager"
+          decoding="async"
+        />
         <span className="photo-number">
           {String(index + 1).padStart(2, '0')}
         </span>
       </div>
 
       <div className="photo-information">
-        <div className="photo-author-label">AUTHOR</div>
-        <h3>Author: {photo.author}</h3>
-        <span className="photo-id">PHOTO ID / {photo.id}</span>
+        <div className="photo-author-label">PHOTOGRAPHER</div>
+        <h3>{photo.author}</h3>
+
+        <div className="photo-location">
+          <MapPin size={15} />
+          <span>{photo.location}</span>
+        </div>
+
+        <div className="photo-id">
+          {photo.title.toUpperCase()} / PHOTO {String(index + 1).padStart(2, '0')}
+        </div>
+
+        <a
+          className="photo-credit"
+          href={photo.source}
+          target="_blank"
+          rel="noreferrer"
+        >
+          IMAGE SOURCE & LICENCE ({photo.license})
+          <ArrowUpRight size={13} />
+        </a>
       </div>
 
       <button
@@ -57,12 +168,7 @@ function PhotoCard({ photo, count, onLike, index }) {
 }
 
 export default function App() {
-  const [photos, setPhotos] = useState([]);
   const [likes, setLikes] = useState({});
-  const [page, setPage] = useState(0);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState('');
-  const [hasMore, setHasMore] = useState(true);
   const [search, setSearch] = useState('');
 
   const [theme, setTheme] = useState(() => {
@@ -73,78 +179,13 @@ export default function App() {
     }
   });
 
-  const sentinelRef = useRef(null);
-  const loadingRef = useRef(false);
-
   useEffect(() => {
     try {
       localStorage.setItem('stillframe-theme', theme);
     } catch {
-      // Theme remains available for this session.
+      // Theme remains active for this session.
     }
   }, [theme]);
-
-  const loadPhotos = useCallback(async (targetPage) => {
-    if (loadingRef.current || !hasMore) return;
-
-    loadingRef.current = true;
-    setLoading(true);
-    setError('');
-
-    try {
-      const response = await fetch(`${API}?page=${targetPage}`);
-
-      if (!response.ok) {
-        throw new Error(`Picsum returned HTTP ${response.status}.`);
-      }
-
-      const data = await response.json();
-
-      if (!Array.isArray(data)) {
-        throw new Error('Unexpected response from Picsum.');
-      }
-
-      if (data.length === 0) {
-        setHasMore(false);
-        return;
-      }
-
-      setPhotos(previous => {
-        const existingIds = new Set(previous.map(photo => photo.id));
-        const newPhotos = data.filter(photo => !existingIds.has(photo.id));
-        return [...previous, ...newPhotos];
-      });
-
-      setPage(targetPage);
-    } catch (err) {
-      console.error('Photo Gallery API error:', err);
-      setError(
-        `${err.message || 'Unable to fetch photos.'} Please check your connection and retry.`
-      );
-    } finally {
-      loadingRef.current = false;
-      setLoading(false);
-    }
-  }, [hasMore]);
-
-  useEffect(() => {
-    loadPhotos(1);
-  }, [loadPhotos]);
-
-  useEffect(() => {
-    const sentinel = sentinelRef.current;
-
-    if (!sentinel || !hasMore || loading || error) return;
-
-    const observer = new IntersectionObserver(entries => {
-      if (entries[0].isIntersecting && !loadingRef.current) {
-        loadPhotos(page + 1);
-      }
-    }, { rootMargin: '300px' });
-
-    observer.observe(sentinel);
-    return () => observer.disconnect();
-  }, [page, hasMore, loading, error, loadPhotos]);
 
   const handleLike = id => {
     setLikes(previous => ({
@@ -153,14 +194,10 @@ export default function App() {
     }));
   };
 
-  const retry = () => {
-    if (!loadingRef.current) {
-      loadPhotos(page === 0 ? 1 : page + 1);
-    }
-  };
-
-  const filteredPhotos = photos.filter(photo =>
-    photo.author.toLowerCase().includes(search.toLowerCase())
+  const filteredPhotos = PHOTOS.filter(photo =>
+    photo.author.toLowerCase().includes(search.toLowerCase()) ||
+    photo.location.toLowerCase().includes(search.toLowerCase()) ||
+    photo.title.toLowerCase().includes(search.toLowerCase())
   );
 
   const totalLikes = Object.values(likes).reduce(
@@ -183,7 +220,6 @@ export default function App() {
             onClick={() => setTheme(current =>
               current === 'dark' ? 'light' : 'dark'
             )}
-            aria-label="Toggle colour theme"
           >
             {theme === 'dark' ? <Sun size={16} /> : <Moon size={16} />}
             <span>{theme === 'dark' ? 'LIGHT MODE' : 'DARK MODE'}</span>
@@ -202,7 +238,7 @@ export default function App() {
           <div className="heading-meta">
             <span>01 — PHOTOGRAPHY</span>
             <span>•</span>
-            <span>INFINITE COLLECTION</span>
+            <span>12 CURATED PHOTOGRAPHS</span>
           </div>
         </section>
 
@@ -215,7 +251,7 @@ export default function App() {
 
             <div className="stats">
               <div>
-                <strong>{String(photos.length).padStart(2, '0')}</strong>
+                <strong>{String(PHOTOS.length).padStart(2, '0')}</strong>
                 <span>PHOTOS</span>
               </div>
               <div>
@@ -227,17 +263,17 @@ export default function App() {
 
           <div className="toolbar">
             <span className="result-count">
-              SHOWING {filteredPhotos.length} OF {photos.length} PHOTOS
+              SHOWING {filteredPhotos.length} OF {PHOTOS.length} PHOTOS
             </span>
 
             <label className="search-box">
               <Search size={15} />
               <input
                 type="search"
-                placeholder="Search photographer..."
+                placeholder="Search photographer or location..."
                 value={search}
                 onChange={event => setSearch(event.target.value)}
-                aria-label="Search photographers"
+                aria-label="Search photographers or locations"
               />
             </label>
           </div>
@@ -247,50 +283,22 @@ export default function App() {
               <PhotoCard
                 key={photo.id}
                 photo={photo}
-                index={index}
+                index={PHOTOS.indexOf(photo)}
                 count={likes[photo.id] || 0}
                 onLike={handleLike}
               />
             ))}
 
-            {!loading && photos.length > 0 && filteredPhotos.length === 0 && (
+            {filteredPhotos.length === 0 && (
               <div className="empty-state">
                 <Search size={25} />
-                <strong>No photographers found.</strong>
-                <span>Try another search term.</span>
+                <strong>No photographs found.</strong>
+                <span>Try another photographer, title or location.</span>
                 <button onClick={() => setSearch('')}>
                   Clear search <ArrowUpRight size={14} />
                 </button>
               </div>
             )}
-
-            {loading && (
-              <div className="loading-state">
-                <LoaderCircle className="spin" size={19} />
-                <span>LOADING PHOTOGRAPHS</span>
-              </div>
-            )}
-
-            {error && (
-              <div className="error-state">
-                <div className="error-icon"><RefreshCw size={20} /></div>
-                <strong>Unable to load photographs</strong>
-                <span>{error}</span>
-                <button onClick={retry} disabled={loading}>
-                  <RefreshCw size={14} /> Retry loading
-                </button>
-              </div>
-            )}
-
-            {!hasMore && photos.length > 0 && (
-              <div className="end-state">
-                <span>—</span>
-                YOU'VE REACHED THE END OF THE COLLECTION
-                <span>—</span>
-              </div>
-            )}
-
-            <div className="scroll-sentinel" ref={sentinelRef} />
           </div>
         </section>
 
