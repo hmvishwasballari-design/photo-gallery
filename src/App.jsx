@@ -118,7 +118,7 @@ const PHOTOS = [
 
 function PhotoCard({ photo, index, count, onLike }) {
   return (
-    <article className="photo-row">
+    <article className="photo-row reveal">
       <div className="photo-image">
         <img
           src={`/photos/${photo.file}`}
@@ -200,12 +200,61 @@ export default function App() {
     photo.title.toLowerCase().includes(search.toLowerCase())
   );
 
+  // Reveal photographs smoothly as they enter the viewport.
+  useEffect(() => {
+    const cards = document.querySelectorAll('.photo-row');
+
+    if (!('IntersectionObserver' in window)) {
+      cards.forEach(card => card.classList.add('is-visible'));
+      return;
+    }
+
+    const observer = new IntersectionObserver(entries => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          entry.target.classList.add('is-visible');
+          observer.unobserve(entry.target);
+        }
+      });
+    }, {
+      threshold: 0.12,
+      rootMargin: '0px 0px -35px 0px'
+    });
+
+    cards.forEach(card => observer.observe(card));
+
+    return () => observer.disconnect();
+  }, [search, filteredPhotos.length]);
+
+  // Keep the cursor spotlight subtle and lightweight.
+  useEffect(() => {
+    const handlePointerMove = event => {
+      document.body.style.setProperty('--mx', `${event.clientX}px`);
+      document.body.style.setProperty('--my', `${event.clientY}px`);
+    };
+
+    window.addEventListener('pointermove', handlePointerMove, {
+      passive: true
+    });
+
+    return () => {
+      window.removeEventListener('pointermove', handlePointerMove);
+    };
+  }, []);
+
   const totalLikes = Object.values(likes).reduce(
     (sum, value) => sum + value, 0
   );
 
   return (
     <div className="gallery-app" data-theme={theme}>
+      <div className="ambient-background" aria-hidden="true">
+        <span className="ambient-orb orb-one" />
+        <span className="ambient-orb orb-two" />
+        <span className="ambient-orb orb-three" />
+        <span className="ambient-grain" />
+      </div>
+
       <header className="topbar">
         <a className="brand" href="#top">
           <span className="brand-icon"><Camera size={17} /></span>
