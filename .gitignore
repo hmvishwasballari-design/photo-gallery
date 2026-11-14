@@ -4,3 +4,9 @@ dist/
 .env.*
 .DS_Store
 npm-debug.log*
+
+# Local backups and generated source snapshots
+.backup-*/
+.styles-before-*.css
+src/*.backup-*
+PHOTO_GALLERY_COMPLETE_SOURCE.txt
